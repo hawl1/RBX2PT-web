@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Image Cropping and Pasting</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+      head {
+        font-family: "Inter", sans-serif;
+        color: white;
+      }
+      body {
+        margin: 0;
+        background-color: #252525;
+        font-family: "Inter", sans-serif;
+        color: white;
+      }
+      .cool-hero {
+        height: 250px;
+        background-image: linear-gradient(90deg, #bf4197 0%, #257fdbc7 100%);
+        display: flex;
+        justify-content: space-evenly;
+        align-items: start;
+      }
+      .title {
+        font-weight: 900;
+        font-size: 2.5rem;
+        text-align: center;
+      }
+
+      .upload-area {
+        border-radius: 20px;
+        padding: 10px;
+        backdrop-filter: blur(80px);
+        width: 250px;
+        height: 250px;
+        border: 2px dotted #bf4197;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #bf4197;
+        flex-direction: column;
+        transition: 0.5s box-shadow linear;
+        background-color: transparent;
+      }
+      .upload-area:hover {
+        box-shadow: 0 0 20px 7px #bf4195ef;
+        backdrop-filter: blur(180px);
+
+      }
+      .upload-area-centerizer {
+        display: flex;
+        justify-content: center;
+        margin-top: -100px;
+        z-index: 20;
+      }
+
+      #imageInput, #sourceCanvas {
+        display: none;
+      }
+
+      .card {
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #181818;
+        color: #2d144b;
+        width: 75%;
+      }
+      
+      .card-centerize {
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      @media (max-width: 800px) {
+        .card {
+          max-width: 100%;
+          overflow: scroll;
+        }
+      }
+
+    </style>
+  </head>
+  <body>
+    <div class="cool-hero">
+      <div>
+        <p class="title">ROBLOX TO POLYTORIA SHIRT CONVERTER</p>
+      </div>
+
+    </div>
+    <div class="upload-area-centerizer">
+      <button class="upload-area" id="uploadButton">
+        <svg width="32px" height="32px" fill="currentColor" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16.884 7.116c-0.011-0.011-0.027-0.015-0.039-0.026-0.104-0.1-0.225-0.183-0.359-0.243l-0.008-0.003-0.004-0c-0.129-0.050-0.279-0.079-0.435-0.079-0.072 0-0.142 0.006-0.21 0.018l0.007-0.001c-0.058 0.007-0.109 0.018-0.158 0.031l0.008-0.002c-0.223 0.051-0.416 0.158-0.571 0.306l0.001-0-5 5c-0.225 0.226-0.363 0.537-0.363 0.881 0 0.69 0.56 1.25 1.25 1.25 0.344 0 0.655-0.139 0.881-0.363l2.866-2.866v18.982c0 0.69 0.56 1.25 1.25 1.25s1.25-0.56 1.25-1.25v0-18.982l2.865 2.866c0.226 0.227 0.539 0.367 0.885 0.367 0.691 0 1.251-0.56 1.251-1.251 0-0.345-0.14-0.658-0.366-0.884v0zM30 0.75h-28c-0.69 0-1.25 0.56-1.25 1.25s0.56 1.25 1.25 1.25v0h28c0.69 0 1.25-0.56 1.25-1.25s-0.56-1.25-1.25-1.25v0z"></path>
+          </svg>
+          <p>Drag & drop, or click to upload</p>
+        </button>
+    </div>
+    <input type="file" accept="image/*" id="imageInput">
+    <canvas id="sourceCanvas" width="1024" height="1024"></canvas>
+    <div class="card-centerize">
+    <div class="card">
+      <canvas id="destinationCanvas" width="1024" height="1024"></canvas>
+    </div>
+  </div>
+    <script>
+      const sourceCanvas = document.getElementById('sourceCanvas');
+      const sourceCtx = sourceCanvas.getContext('2d');
+      const destinationCanvas = document.getElementById('destinationCanvas');
+      const destinationCtx = destinationCanvas.getContext('2d');
+
+      const imageInput = document.getElementById('imageInput');
+      imageInput.addEventListener('change', handleImageUpload);
+
+      const uploadButton = document.getElementById('uploadButton')
+      uploadButton.addEventListener('click', (e) => {
+        imageInput.click()
+      })
+      uploadButton.addEventListener('dragover', (e) => e.preventDefault())
+      uploadButton.addEventListener('drop', (e) => {
+        e.preventDefault()
+        e.target.files = [e.dataTransfer.items[0].getAsFile()]
+        handleImageUpload(e)
+      })
+
+      function handleImageUpload(e) {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(event) {
+          const img = new Image();
+          img.onload = function() {
+            sourceCtx.clearRect(0, 0, sourceCanvas.width, sourceCanvas.height);
+            sourceCtx.drawImage(img, 0, 0);
+
+            processImage();
+          };
+          img.src = event.target.result;
+        };
+
+        reader.readAsDataURL(file);
+      }
+
+      function processImage() {
+        const destinationImage = destinationCtx.createImageData(1024, 1024);
+
+        const regions = [
+            // Torso regions
+            { cropX: 231, cropY: 74, cropWidth: 359 - 231, cropHeight: 202 - 74, pasteX: 200, pasteY: 185, resizeWidth: 200, resizeHeight: 200 },
+            { cropX: 231, cropY: 8, cropWidth: 359 - 231, cropHeight: 72 - 8, pasteX: 200, pasteY: 75, resizeWidth: 200, resizeHeight: 100 },
+            { cropX: 231, cropY: 204, cropWidth: 359 - 231, cropHeight: 268 - 204, pasteX: 200, pasteY: 395, resizeWidth: 200, resizeHeight: 100 },
+            { cropX: 165, cropY: 74, cropWidth: 229 - 165, cropHeight: 202 - 74, pasteX: 90, pasteY: 185, resizeWidth: 100, resizeHeight: 200 },
+            { cropX: 361, cropY: 74, cropWidth: 425 - 361, cropHeight: 202 - 74, pasteX: 410, pasteY: 185, resizeWidth: 100, resizeHeight: 200 },
+            { cropX: 427, cropY: 74, cropWidth: 555 - 427, cropHeight: 202 - 74, pasteX: 520, pasteY: 185, resizeWidth: 200, resizeHeight: 200 },
+
+            // Left arm regions
+            { cropX: 217, cropY: 289, cropWidth: 281 - 217, cropHeight: 353 - 289, pasteX: 383, pasteY: 558, resizeWidth: 100, resizeHeight: 100 },
+            { cropX: 217, cropY: 355, cropWidth: 281 - 217, cropHeight: 483 - 355, pasteX: 383, pasteY: 668, resizeWidth: 100, resizeHeight: 200 },
+            { cropX: 151, cropY: 355, cropWidth: 215 - 151, cropHeight: 483 - 355, pasteX: 273, pasteY: 668, resizeWidth: 100, resizeHeight: 200 },
+            { cropX: 85, cropY: 355, cropWidth: 149 - 85, cropHeight: 483 - 355, pasteX: 163, pasteY: 668, resizeWidth: 100, resizeHeight: 200 },
+            { cropX: 19, cropY: 355, cropWidth: 83 - 19, cropHeight: 483 - 355, pasteX: 53, pasteY: 668, resizeWidth: 100, resizeHeight: 200 },
+            { cropX: 217, cropY: 485, cropWidth: 281 - 217, cropHeight: 549 - 485, pasteX: 383, pasteY: 878, resizeWidth: 100, resizeHeight: 100 },
+
+            // Right arm regions
+            { cropX: 308, cropY: 289, cropWidth: 372 - 308, cropHeight: 353 - 289, pasteX: 539, pasteY: 558, resizeWidth: 100, resizeHeight: 100 },
+            { cropX: 308, cropY: 355, cropWidth: 372 - 308, cropHeight: 483 - 355, pasteX: 539, pasteY: 668, resizeWidth: 100, resizeHeight: 200 },
+            { cropX: 374, cropY: 355, cropWidth: 438 - 374, cropHeight: 483 - 355, pasteX: 650, pasteY: 668, resizeWidth: 100, resizeHeight: 200 },
+            { cropX: 440, cropY: 355, cropWidth: 504 - 440, cropHeight: 483 - 355, pasteX: 760, pasteY: 668, resizeWidth: 100, resizeHeight: 200 },
+            { cropX: 506, cropY: 355, cropWidth: 570 - 506, cropHeight: 483 - 355, pasteX: 871, pasteY: 668, resizeWidth: 100, resizeHeight: 200 },
+            { cropX: 308, cropY: 485, cropWidth: 372 - 308, cropHeight: 549 - 485, pasteX: 539, pasteY: 878, resizeWidth: 100, resizeHeight: 100 },
+        ];
+
+        // Pro optimizization
+        destinationCtx.canvas.willReadFrequently = true;
+
+        regions.forEach(region => {
+        const imageData = sourceCtx.getImageData(region.cropX, region.cropY, region.cropWidth, region.cropHeight);
+
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = region.resizeWidth;
+        tempCanvas.height = region.resizeHeight;
+        const tempCtx = tempCanvas.getContext('2d');
+
+        tempCtx.drawImage(
+            sourceCanvas,
+            region.cropX,
+            region.cropY,
+            region.cropWidth,
+            region.cropHeight,
+            0,
+            0,
+            region.resizeWidth,
+            region.resizeHeight
+        );
+
+        const resizedImageData = tempCtx.getImageData(0, 0, region.resizeWidth, region.resizeHeight);
+
+        destinationCtx.putImageData(resizedImageData, region.pasteX, region.pasteY);
+        });
+
+        const outputImage = destinationCanvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = outputImage;
+        link.download = 'output_image.png';
+        link.click();
+      }
+    </script>
+  </body>
+</html>
