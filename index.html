@@ -175,6 +175,8 @@
         // Pro optimizization
         destinationCtx.canvas.willReadFrequently = true;
 
+        sourceCtx.imageSmoothingEnabled = true;
+
         regions.forEach(region => {
         const imageData = sourceCtx.getImageData(region.cropX, region.cropY, region.cropWidth, region.cropHeight);
 
@@ -182,6 +184,8 @@
         tempCanvas.width = region.resizeWidth;
         tempCanvas.height = region.resizeHeight;
         const tempCtx = tempCanvas.getContext('2d');
+
+        tempCtx.imageSmoothingEnabled = true;
 
         tempCtx.drawImage(
             sourceCanvas,
